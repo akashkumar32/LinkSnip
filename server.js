@@ -11,25 +11,13 @@ const { suggestSmartAliases, analyzeUrlSafety, generateClickInsights } = require
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Helper: Get real accessible URL for QR codes
+// Helper: Get real accessible URL for short links
 function getBaseUrl(req) {
-  // On Railway/Cloud: use the actual host from request headers (e.g. linksnip.up.railway.app)
   const host = req.get('host');
   const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-
-  // On localhost: use local network IP so phones on same WiFi can scan QR codes
-  if (host && host.includes('localhost')) {
-    const networkInterfaces = os.networkInterfaces();
-    for (const iface of Object.values(networkInterfaces)) {
-      for (const alias of iface) {
-        if (alias.family === 'IPv4' && !alias.internal) {
-          return `http://${alias.address}:${PORT}`;
-        }
-      }
-    }
-  }
   return `${protocol}://${host}`;
 }
+
 
 
 // Middleware
