@@ -68,35 +68,40 @@
           <!-- Advanced Options (Collapsible / Grid) -->
           <div class="grid-2">
             <div class="form-group">
-              <label for="expireAt">Expiration Date (Optional)</label>
+              <label for="expireAt">⏰ Expiration Date (Optional)</label>
               <div class="input-wrapper">
                 <input type="datetime-local" id="expireAt">
               </div>
+              <span style="font-size: 11px; color: #94a3b8;">Link stops working after this date.</span>
             </div>
 
             <div class="form-group">
-              <label for="maxClicks">Max Click Limit (Optional)</label>
+              <label for="maxClicks">🔢 Max Click Limit (Optional)</label>
               <div class="input-wrapper">
                 <input type="number" id="maxClicks" placeholder="e.g. 100" min="1">
               </div>
+              <span style="font-size: 11px; color: #94a3b8;">Link disables after reaching this many clicks.</span>
             </div>
           </div>
 
           <div class="grid-2">
             <div class="form-group">
-              <label for="linkPassword">Password Lock (Optional)</label>
+              <label for="linkPassword">🔒 Password Lock (Optional)</label>
               <div class="input-wrapper">
-                <input type="password" id="linkPassword" placeholder="Protect with passcode">
+                <input type="password" id="linkPassword" placeholder="e.g. secret123">
               </div>
+              <span style="font-size: 11px; color: #94a3b8;">Visitors must enter this password before being redirected.</span>
             </div>
 
             <div class="form-group">
-              <label for="linkTags">Tags / Folder</label>
+              <label for="linkTags">🏷️ Tags / Folder (Optional)</label>
               <div class="input-wrapper">
-                <input type="text" id="linkTags" placeholder="marketing, twitter, launch">
+                <input type="text" id="linkTags" placeholder="e.g. marketing, twitter, launch">
               </div>
+              <span style="font-size: 11px; color: #94a3b8;">Organize & filter your links in the Dashboard.</span>
             </div>
           </div>
+
 
           <button type="submit" class="btn-primary">
             ⚡ Shorten Link Now
