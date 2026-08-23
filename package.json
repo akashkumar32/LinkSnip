@@ -16,6 +16,9 @@
   ],
   "author": "",
   "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.19.2",
@@ -24,3 +27,4 @@
     "useragent": "^2.3.0"
   }
 }
+

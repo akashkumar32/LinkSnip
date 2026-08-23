@@ -613,9 +613,10 @@ app.get('/:code', async (req, res, next) => {
 });
 
 // Start Server
-app.listen(PORT, () => {
+const HOST = process.env.HOST || '0.0.0.0';
+app.listen(PORT, HOST, () => {
   console.log(`=================================================`);
-  console.log(`🚀 LinkSnip URL Shortener running on port ${PORT}`);
-  console.log(`👉 http://localhost:${PORT}`);
+  console.log(`🚀 LinkSnip URL Shortener running on ${HOST}:${PORT}`);
   console.log(`=================================================`);
 });
+
