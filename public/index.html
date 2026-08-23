@@ -35,22 +35,24 @@
         <form id="shortenForm" onsubmit="handleShorten(event)">
           <!-- Main Long URL Input -->
           <div class="form-group">
-            <label for="targetUrl">Destination Long URL *</label>
+            <label for="targetUrl">🔗 Destination Long URL *</label>
             <div class="input-wrapper">
               <input type="url" id="targetUrl" placeholder="https://example.com/very/long/url/path?source=campaign" required>
             </div>
+            <span style="font-size: 11px; color: #94a3b8;">Paste the long URL you want to shorten.</span>
           </div>
 
           <!-- Custom Alias & AI Suggestions -->
           <div class="grid-2">
             <div class="form-group">
               <label for="customAlias">
-                Custom Alias (Optional)
+                ✏️ Custom Alias (Optional)
                 <button type="button" class="btn-ai" onclick="getAISuggestions()">✨ AI Suggest Alias</button>
               </label>
               <div class="input-wrapper">
                 <input type="text" id="customAlias" placeholder="e.g. my-summer-sale">
               </div>
+              <span style="font-size: 11px; color: #94a3b8;">Create a branded short link name (3-30 chars). Leave empty for auto-generated code.</span>
               <div id="aiSuggestionsBox" class="ai-suggestions-box">
                 <span style="font-size: 12px; color: #67e8f9; font-weight: 700;">🤖 AI Suggested Aliases:</span>
                 <div id="aliasChips" class="alias-chips"></div>
@@ -58,12 +60,14 @@
             </div>
 
             <div class="form-group">
-              <label for="linkTitle">Link Title / Campaign Tag</label>
+              <label for="linkTitle">📝 Link Title / Campaign Tag</label>
               <div class="input-wrapper">
                 <input type="text" id="linkTitle" placeholder="e.g. Black Friday Promo 2026">
               </div>
+              <span style="font-size: 11px; color: #94a3b8;">A friendly name to identify this link in your Dashboard.</span>
             </div>
           </div>
+
 
           <!-- Advanced Options (Collapsible / Grid) -->
           <div class="grid-2">
