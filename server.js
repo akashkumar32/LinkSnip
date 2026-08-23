@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const os = require('os');
 const QRCode = require('qrcode');
 const { dbAsync } = require('./database');
 const { encodeBase62, generateRandomCode, isValidAlias } = require('./utils/base62');
@@ -9,6 +10,27 @@ const { suggestSmartAliases, analyzeUrlSafety, generateClickInsights } = require
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Helper: Get real accessible URL for QR codes
+function getBaseUrl(req) {
+  // On Railway/Cloud: use the actual host from request headers (e.g. linksnip.up.railway.app)
+  const host = req.get('host');
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+
+  // On localhost: use local network IP so phones on same WiFi can scan QR codes
+  if (host && host.includes('localhost')) {
+    const networkInterfaces = os.networkInterfaces();
+    for (const iface of Object.values(networkInterfaces)) {
+      for (const alias of iface) {
+        if (alias.family === 'IPv4' && !alias.internal) {
+          return `http://${alias.address}:${PORT}`;
+        }
+      }
+    }
+  }
+  return `${protocol}://${host}`;
+}
+
 
 // Middleware
 app.use(cors());
@@ -103,10 +125,9 @@ app.post('/api/shorten', async (req, res) => {
       ]
     );
 
-    const protocol = req.protocol;
-    const host = req.get('host');
-    const shortUrl = `${protocol}://${host}/${shortCode}`;
-    const qrDataUrl = await QRCode.toDataURL(shortUrl);
+    const baseUrl = getBaseUrl(req);
+    const shortUrl = `${baseUrl}/${shortCode}`;
+    const qrDataUrl = await QRCode.toDataURL(shortUrl, { width: 200, margin: 2 });
 
     return res.status(201).json({
       message: 'Link shortened successfully!',
@@ -142,8 +163,7 @@ app.post('/api/bulk-shorten', async (req, res) => {
     }
 
     const createdLinks = [];
-    const protocol = req.protocol;
-    const host = req.get('host');
+    const baseUrl = getBaseUrl(req);
 
     for (const item of urls) {
       if (!item.target_url) continue;
@@ -158,7 +178,7 @@ app.post('/api/bulk-shorten', async (req, res) => {
       createdLinks.push({
         id: result.lastID,
         short_code: shortCode,
-        short_url: `${protocol}://${host}/${shortCode}`,
+        short_url: `${baseUrl}/${shortCode}`,
         target_url,
         title: item.title || target_url
       });
@@ -268,12 +288,11 @@ app.get('/api/links', async (req, res) => {
     }
 
     const links = await dbAsync.all(query, params);
-    const host = req.get('host');
-    const protocol = req.protocol;
+    const baseUrl = getBaseUrl(req);
 
     const formattedLinks = links.map(link => ({
       ...link,
-      short_url: `${protocol}://${host}/${link.short_code}`,
+      short_url: `${baseUrl}/${link.short_code}`,
       has_password: !!link.password
     }));
 

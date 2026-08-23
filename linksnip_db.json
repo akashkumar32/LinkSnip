@@ -13,6 +13,20 @@
       "is_active": 1,
       "tags": null,
       "created_at": "2026-08-23T18:10:53.132Z"
+    },
+    {
+      "id": 2,
+      "short_code": "hackerrank-now",
+      "target_url": "https://www.hackerrank.com/",
+      "custom_alias": "hackerrank-now",
+      "title": "Hackkerrank",
+      "password": "2000",
+      "expire_at": "2026-08-22T18:25:00.000Z",
+      "max_clicks": 66,
+      "click_count": 0,
+      "is_active": 1,
+      "tags": "marketing",
+      "created_at": "2026-08-23T18:25:24.657Z"
     }
   ],
   "click_analytics": []
