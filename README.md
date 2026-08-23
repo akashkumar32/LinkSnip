@@ -103,15 +103,15 @@ LinkSnip is a next-generation URL shortening service built with Node.js, Express
 
 ---
 
-## 🌐 Live Deployment Guide (Free Hosting)
+## 🌐 Live Deployment Guide (Railway.app)
 
-### Deploying to Render.com (Recommended)
-1. Push code to your GitHub repository.
-2. Go to [Render.com](https://render.com) and create a **Web Service**.
-3. Connect your GitHub repository.
-4. Set Build Command: `npm install`
-5. Set Start Command: `node server.js`
-6. Click **Deploy**. Your live app link will be ready in 1-2 minutes!
+### Deploying to Railway.app (Recommended - Free)
+1. Go to **[railway.app](https://railway.app)** and log in with your GitHub account.
+2. Click **+ New Project** → **Deploy from GitHub repo**.
+3. Select your repository: **`akashkumar32/LinkSnip`**.
+4. Click **Deploy Now** — Railway auto-detects Node.js and runs `npm install` + `node server.js`.
+5. Once deployed, click on your service → Go to **Settings** tab → Under **Networking**, click **Generate Domain**.
+6. Your live URL is ready instantly (e.g., `https://linksnip-production.up.railway.app`).
 
 ---
 
