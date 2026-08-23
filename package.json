@@ -1,0 +1,26 @@
+{
+  "name": "linksnip",
+  "version": "1.0.0",
+  "description": "AI-Powered URL Shortening & Analytics Platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "url-shortener",
+    "analytics",
+    "ai",
+    "base62",
+    "link-management"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "qrcode": "^1.5.3",
+    "sqlite3": "^5.1.7",
+    "useragent": "^2.3.0"
+  }
+}

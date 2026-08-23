@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinkSnip - Next-Gen AI-Powered URL Shortener & Analytics</title>
+  <meta name="description" content="Convert long URLs into smart short links with real-time analytics, AI security checks, and custom aliases.">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- Navigation Header -->
+  <header>
+    <a href="#" class="logo">
+      ✂️ LinkSnip <span class="logo-badge">AI 1.0</span>
+    </a>
+    <nav>
+      <button class="active" id="navShortener" onclick="switchTab('shortenerTab')">Shortener</button>
+      <button id="navDashboard" onclick="switchTab('dashboardTab')">Dashboard</button>
+      <button id="navApi" onclick="switchTab('apiTab')">API Docs</button>
+    </nav>
+  </header>
+
+  <div class="container">
+
+    <!-- TAB 1: SHORTENER TAB -->
+    <div id="shortenerTab" class="tab-content">
+      <div class="hero">
+        <h1>Shorten, Track & Protect Links with <span>AI Power</span></h1>
+        <p>Transform messy links into memorable short URLs with click analytics, AI phishing detection, and smart aliases.</p>
+      </div>
+
+      <div class="glass-card">
+        <form id="shortenForm" onsubmit="handleShorten(event)">
+          <!-- Main Long URL Input -->
+          <div class="form-group">
+            <label for="targetUrl">Destination Long URL *</label>
+            <div class="input-wrapper">
+              <input type="url" id="targetUrl" placeholder="https://example.com/very/long/url/path?source=campaign" required>
+            </div>
+          </div>
+
+          <!-- Custom Alias & AI Suggestions -->
+          <div class="grid-2">
+            <div class="form-group">
+              <label for="customAlias">
+                Custom Alias (Optional)
+                <button type="button" class="btn-ai" onclick="getAISuggestions()">✨ AI Suggest Alias</button>
+              </label>
+              <div class="input-wrapper">
+                <input type="text" id="customAlias" placeholder="e.g. my-summer-sale">
+              </div>
+              <div id="aiSuggestionsBox" class="ai-suggestions-box">
+                <span style="font-size: 12px; color: #67e8f9; font-weight: 700;">🤖 AI Suggested Aliases:</span>
+                <div id="aliasChips" class="alias-chips"></div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="linkTitle">Link Title / Campaign Tag</label>
+              <div class="input-wrapper">
+                <input type="text" id="linkTitle" placeholder="e.g. Black Friday Promo 2026">
+              </div>
+            </div>
+          </div>
+
+          <!-- Advanced Options (Collapsible / Grid) -->
+          <div class="grid-2">
+            <div class="form-group">
+              <label for="expireAt">Expiration Date (Optional)</label>
+              <div class="input-wrapper">
+                <input type="datetime-local" id="expireAt">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="maxClicks">Max Click Limit (Optional)</label>
+              <div class="input-wrapper">
+                <input type="number" id="maxClicks" placeholder="e.g. 100" min="1">
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label for="linkPassword">Password Lock (Optional)</label>
+              <div class="input-wrapper">
+                <input type="password" id="linkPassword" placeholder="Protect with passcode">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="linkTags">Tags / Folder</label>
+              <div class="input-wrapper">
+                <input type="text" id="linkTags" placeholder="marketing, twitter, launch">
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary">
+            ⚡ Shorten Link Now
+          </button>
+        </form>
+
+        <!-- Result Box -->
+        <div id="resultCard" class="result-card">
+          <div class="result-header">
+            <h3>🎉 Link Created Successfully!</h3>
+            <div id="safetyBadge" class="safety-badge safe">
+              🛡️ AI Safety: 100% Safe
+            </div>
+          </div>
+
+          <div class="short-url-box">
+            <a id="resultShortUrl" href="#" target="_blank">https://linksnip.to/xyz123</a>
+            <button class="copy-btn" onclick="copyResultUrl()">Copy URL</button>
+          </div>
+
+          <div class="grid-2" style="margin-top: 16px; align-items: center;">
+            <div>
+              <p style="font-size: 14px; color: var(--text-muted);" id="resultTargetUrl">Destination: https://example.com</p>
+              <p style="font-size: 13px; color: #67e8f9; margin-top: 6px;" id="resultAiSummary">AI Safety Scan verified: Destination URL appears clean and legitimate.</p>
+            </div>
+            <div style="text-align: center;">
+              <img id="resultQrCode" src="" alt="QR Code" style="width: 120px; border-radius: 8px; border: 1px solid var(--border-glass);">
+              <p style="font-size: 11px; color: var(--text-muted);">Scan QR Code</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 2: DASHBOARD TAB -->
+    <div id="dashboardTab" class="tab-content" style="display: none;">
+      <div class="glass-card">
+        <div class="dashboard-controls">
+          <input type="text" id="searchInput" class="search-input" placeholder="Search by URL, alias, title, or tag..." oninput="loadLinks()">
+          <select id="sortSelect" class="search-input" style="flex: 0 0 180px;" onchange="loadLinks()">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="clicks">Most Clicks</option>
+          </select>
+          <button class="btn-secondary" onclick="loadLinks()">🔄 Refresh</button>
+        </div>
+
+        <table class="link-table">
+          <thead>
+            <tr>
+              <th>Short Link & Title</th>
+              <th>Destination URL</th>
+              <th>Clicks</th>
+              <th>Tags / Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="linksTableBody">
+            <!-- Dynamic Rows -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 3: API DOCS TAB -->
+    <div id="apiTab" class="tab-content" style="display: none;">
+      <div class="glass-card">
+        <h2 style="font-family: var(--font-heading); margin-bottom: 12px; color: #67e8f9;">🔌 LinkSnip REST API Documentation</h2>
+        <p style="color: var(--text-muted); margin-bottom: 24px;">Integrate LinkSnip shortening & analytics directly into your application.</p>
+
+        <div style="background: #0f172a; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-glass);">
+          <span style="background: #10b981; color: white; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 12px;">POST</span>
+          <code style="color: #f8fafc; font-size: 15px; margin-left: 10px;">/api/shorten</code>
+          <p style="color: var(--text-muted); font-size: 14px; margin-top: 8px;">Create a short URL with optional custom alias, password, and expiration.</p>
+          <pre style="background: #090d16; color: #34d399; padding: 12px; border-radius: 8px; margin-top: 10px; font-size: 13px;">
+{
+  "target_url": "https://example.com/promo",
+  "custom_alias": "spring-sale",
+  "expire_at": "2026-12-31T23:59:59Z",
+  "max_clicks": 500,
+  "password": "secretpasscode"
+}</pre>
+        </div>
+
+        <div style="background: #0f172a; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-glass);">
+          <span style="background: #6366f1; color: white; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 12px;">GET</span>
+          <code style="color: #f8fafc; font-size: 15px; margin-left: 10px;">/api/analytics/:id</code>
+          <p style="color: var(--text-muted); font-size: 14px; margin-top: 8px;">Fetch per-link click counts, referrers, locations, and time breakdown.</p>
+        </div>
+
+        <div style="background: #0f172a; padding: 20px; border-radius: 12px; border: 1px solid var(--border-glass);">
+          <span style="background: #06b6d4; color: black; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 12px;">POST</span>
+          <code style="color: #f8fafc; font-size: 15px; margin-left: 10px;">/api/ai/suggest-alias</code>
+          <p style="color: var(--text-muted); font-size: 14px; margin-top: 8px;">Returns AI-generated smart custom alias recommendations.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ANALYTICS MODAL -->
+  <div id="analyticsModal" class="modal">
+    <div class="modal-content">
+      <button class="close-modal" onclick="closeAnalyticsModal()">&times;</button>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+          <h2 id="modalLinkTitle" style="font-family: var(--font-heading);">Link Analytics</h2>
+          <a id="modalShortUrl" href="#" target="_blank" style="color: #67e8f9; font-weight: 700;">https://linksnip.to/xyz</a>
+        </div>
+        <a id="modalExportCsv" href="#" class="btn-secondary" style="text-decoration: none;">📥 Download CSV Report</a>
+      </div>
+
+      <!-- AI Insights Box -->
+      <div class="ai-insights-box">
+        <h3>🤖 AI Traffic Insights & Recommendations</h3>
+        <p id="aiExecutiveSummary" style="font-size: 14px; color: var(--text-main); margin-bottom: 8px;"></p>
+        <ul id="aiRecommendationsList" style="padding-left: 20px; font-size: 13px; color: #cbd5e1;"></ul>
+      </div>
+
+      <!-- Charts Grid -->
+      <div class="charts-grid">
+        <div class="chart-card" style="grid-column: span 2;">
+          <h4>Clicks Over Time</h4>
+          <canvas id="clicksChart" height="180"></canvas>
+        </div>
+        <div class="chart-card">
+          <h4>Top Referrers</h4>
+          <canvas id="referrerChart" height="200"></canvas>
+        </div>
+        <div class="chart-card">
+          <h4>Device Breakdown</h4>
+          <canvas id="deviceChart" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
