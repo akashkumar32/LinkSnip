@@ -127,7 +127,9 @@ app.post('/api/shorten', async (req, res) => {
 
     const baseUrl = getBaseUrl(req);
     const shortUrl = `${baseUrl}/${shortCode}`;
-    const qrDataUrl = await QRCode.toDataURL(shortUrl, { width: 200, margin: 2 });
+    // QR code points to the destination URL directly — works on any device/network
+    const qrDataUrl = await QRCode.toDataURL(target_url, { width: 200, margin: 2 });
+
 
     return res.status(201).json({
       message: 'Link shortened successfully!',
