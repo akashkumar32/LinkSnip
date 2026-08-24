@@ -321,7 +321,7 @@
               </div>
               <h4 style="font-size: 13px; color: #67e8f9; margin-top: 20px; margin-bottom: 8px;">REST cURL Example Usage</h4>
               <pre style="background: #090d16; color: #34d399; padding: 12px; border-radius: 8px; font-size: 12px; overflow-x: auto;">
-curl -X POST http://localhost:3000/api/shorten \
+curl -X POST ${window.location.origin}/api/shorten \
   -H "X-API-Key: <span id="curlTokenPlaceholder">your_token_here</span>" \
   -H "Content-Type: application/json" \
   -d '{"target_url": "https://google.com", "redirect_type": 301}'</pre>
