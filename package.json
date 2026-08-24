@@ -20,11 +20,15 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "express": "^4.19.2",
+    "express-rate-limit": "^8.6.2",
+    "express-session": "^1.19.0",
+    "jsonwebtoken": "^9.0.3",
+    "nodemailer": "^9.0.5",
     "qrcode": "^1.5.3",
+    "swagger-ui-express": "^5.0.1",
     "useragent": "^2.3.0"
   }
 }
-
-

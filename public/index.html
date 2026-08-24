@@ -10,16 +10,27 @@
 </head>
 <body>
 
+  <!-- Toast Notification -->
+  <div id="toast" class="toast"></div>
+
   <!-- Navigation Header -->
   <header>
-    <a href="#" class="logo">
-      ✂️ LinkSnip <span class="logo-badge">AI 1.0</span>
+    <a href="#" class="logo" onclick="switchTab('shortenerTab')">
+      ✂️ LinkSnip <span class="logo-badge">AI 2.0</span>
     </a>
     <nav>
       <button class="active" id="navShortener" onclick="switchTab('shortenerTab')">Shortener</button>
       <button id="navDashboard" onclick="switchTab('dashboardTab')">Dashboard</button>
-      <button id="navApi" onclick="switchTab('apiTab')">API Docs</button>
+      <button id="navApi" onclick="window.open('/api-docs', '_blank')">API Docs 🔗</button>
     </nav>
+    <div class="user-menu" id="userMenu">
+      <button class="btn-secondary" onclick="openAuthModal()" id="loginBtn">🔑 Login / Register</button>
+      <div id="userInfo" class="user-info" style="display: none;">
+        <button class="btn-upgrade" id="headerUpgradeBtn" onclick="openUpgradeModal()">⭐ Upgrade to Pro</button>
+        <span id="userEmail" class="email-badge"></span>
+        <button class="btn-secondary btn-logout" onclick="handleLogout()">Logout</button>
+      </div>
+    </div>
   </header>
 
   <div class="container">
@@ -32,6 +43,13 @@
       </div>
 
       <div class="glass-card">
+        <!-- Form Selector Tabs (Single vs Bulk) -->
+        <div class="form-tabs">
+          <button class="form-tab-btn active" id="singleTabBtn" onclick="switchFormType('single')">Single URL</button>
+          <button class="form-tab-btn" id="bulkTabBtn" onclick="switchFormType('bulk')">Bulk Shorten (CSV)</button>
+        </div>
+
+        <!-- Single Shortener Form -->
         <form id="shortenForm" onsubmit="handleShorten(event)">
           <!-- Main Long URL Input -->
           <div class="form-group">
@@ -52,7 +70,7 @@
               <div class="input-wrapper">
                 <input type="text" id="customAlias" placeholder="e.g. my-summer-sale">
               </div>
-              <span style="font-size: 11px; color: #94a3b8;">Create a branded short link name (3-30 chars). Leave empty for auto-generated code.</span>
+              <span style="font-size: 11px; color: #94a3b8;">Create a branded short link (3-30 chars). Leave empty for auto-generated code.</span>
               <div id="aiSuggestionsBox" class="ai-suggestions-box">
                 <span style="font-size: 12px; color: #67e8f9; font-weight: 700;">🤖 AI Suggested Aliases:</span>
                 <div id="aliasChips" class="alias-chips"></div>
@@ -68,8 +86,29 @@
             </div>
           </div>
 
+          <!-- Redirection Type (PRD Configurable 301 vs 302) -->
+          <div class="grid-2">
+            <div class="form-group">
+              <label for="redirectType">🔄 Redirection Type (PRD Req)</label>
+              <div class="input-wrapper">
+                <select id="redirectType">
+                  <option value="302">302 Temporary Redirect (Best for changing destinations)</option>
+                  <option value="301">301 Permanent Redirect (Best for SEO)</option>
+                </select>
+              </div>
+              <span style="font-size: 11px; color: #94a3b8;">Configure redirection response type returned by short codes.</span>
+            </div>
 
-          <!-- Advanced Options (Collapsible / Grid) -->
+            <div class="form-group">
+              <label for="linkTags">🏷️ Tags / Folder (Optional)</label>
+              <div class="input-wrapper">
+                <input type="text" id="linkTags" placeholder="e.g. marketing, twitter, launch">
+              </div>
+              <span style="font-size: 11px; color: #94a3b8;">Organize links in the Dashboard.</span>
+            </div>
+          </div>
+
+          <!-- Advanced Options -->
           <div class="grid-2">
             <div class="form-group">
               <label for="expireAt">⏰ Expiration Date (Optional)</label>
@@ -88,27 +127,31 @@
             </div>
           </div>
 
-          <div class="grid-2">
-            <div class="form-group">
-              <label for="linkPassword">🔒 Password Lock (Optional)</label>
-              <div class="input-wrapper">
-                <input type="password" id="linkPassword" placeholder="e.g. secret123">
-              </div>
-              <span style="font-size: 11px; color: #94a3b8;">Visitors must enter this password before being redirected.</span>
+          <div class="form-group" style="max-width: 50%;">
+            <label for="linkPassword">🔒 Password Protection (Optional)</label>
+            <div class="input-wrapper">
+              <input type="password" id="linkPassword" placeholder="Enter password">
             </div>
-
-            <div class="form-group">
-              <label for="linkTags">🏷️ Tags / Folder (Optional)</label>
-              <div class="input-wrapper">
-                <input type="text" id="linkTags" placeholder="e.g. marketing, twitter, launch">
-              </div>
-              <span style="font-size: 11px; color: #94a3b8;">Organize & filter your links in the Dashboard.</span>
-            </div>
+            <span style="font-size: 11px; color: #94a3b8;">Password is optional. Visitors must unlock before redirection.</span>
           </div>
-
 
           <button type="submit" class="btn-primary">
             ⚡ Shorten Link Now
+          </button>
+        </form>
+
+        <!-- Bulk Shortener Form -->
+        <form id="bulkShortenForm" onsubmit="handleBulkShorten(event)" style="display: none;">
+          <div class="form-group">
+            <label for="bulkCsvInput">📋 Paste CSV Content (target_url, custom_alias, title, tags)</label>
+            <div class="input-wrapper">
+              <textarea id="bulkCsvInput" rows="6" placeholder="https://example.com/item1, item1-promo, My Item Title, sales&#10;https://example.com/item2, , , product"></textarea>
+            </div>
+            <span style="font-size: 11px; color: #94a3b8;">Format: One URL per line. CSV columns: Destination URL, Custom Alias (optional), Title (optional), Tags (optional)</span>
+          </div>
+
+          <button type="submit" class="btn-primary">
+            ⚡ Bulk Shorten CSV
           </button>
         </form>
 
@@ -126,16 +169,39 @@
             <button class="copy-btn" onclick="copyResultUrl()">Copy URL</button>
           </div>
 
-          <div class="grid-2" style="margin-top: 16px; align-items: center;">
+          <div class="grid-2" style="margin-top: 20px; align-items: flex-start;">
             <div>
               <p style="font-size: 14px; color: var(--text-muted);" id="resultTargetUrl">Destination: https://example.com</p>
-              <p style="font-size: 13px; color: #67e8f9; margin-top: 6px;" id="resultAiSummary">AI Safety Scan verified: Destination URL appears clean and legitimate.</p>
+              <p style="font-size: 13px; color: #67e8f9; margin-top: 6px; font-weight: 500;" id="resultAiSummary">AI Safety Scan verified: Destination URL appears clean and legitimate.</p>
+              
+              <!-- QR Customizer inside Result Box -->
+              <div class="qr-customizer-box" style="margin-top: 20px; border-top: 1px solid var(--border-glass); padding-top: 16px;">
+                <h4 style="font-size: 13px; margin-bottom: 8px; color: #a5b4fc;">🎨 Branded QR Customizer</h4>
+                <div class="grid-2" style="gap: 10px;">
+                  <div>
+                    <label style="font-size: 11px; color: var(--text-muted);">Foreground Color</label>
+                    <input type="color" id="qrColorDark" value="#0f172a" onchange="regenerateQrCode()">
+                  </div>
+                  <div>
+                    <label style="font-size: 11px; color: var(--text-muted);">Background Color</label>
+                    <input type="color" id="qrColorLight" value="#ffffff" onchange="regenerateQrCode()">
+                  </div>
+                </div>
+                <button type="button" class="btn-secondary" style="margin-top: 12px; font-size: 11px; padding: 6px 12px; width: 100%;" onclick="downloadQrCode()">💾 Download QR Code</button>
+              </div>
             </div>
+            
             <div style="text-align: center;">
-              <img id="resultQrCode" src="" alt="QR Code" style="width: 120px; border-radius: 8px; border: 1px solid var(--border-glass);">
-              <p style="font-size: 11px; color: var(--text-muted);">Scan QR Code</p>
+              <img id="resultQrCode" src="" alt="QR Code" style="width: 150px; border-radius: 8px; border: 1px solid var(--border-glass); background: white; padding: 10px;">
+              <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Campaign QR Code</p>
             </div>
           </div>
+        </div>
+
+        <!-- Bulk Result Box -->
+        <div id="bulkResultCard" class="result-card" style="background: rgba(99, 102, 241, 0.1); border-color: rgba(99, 102, 241, 0.3);">
+          <h3 id="bulkResultTitle" style="margin-bottom: 12px;">🎉 Bulk Import Finished</h3>
+          <div style="max-height: 250px; overflow-y: auto;" id="bulkResultsList"></div>
         </div>
 
       </div>
@@ -143,68 +209,319 @@
 
     <!-- TAB 2: DASHBOARD TAB -->
     <div id="dashboardTab" class="tab-content" style="display: none;">
-      <div class="glass-card">
-        <div class="dashboard-controls">
-          <input type="text" id="searchInput" class="search-input" placeholder="Search by URL, alias, title, or tag..." oninput="loadLinks()">
-          <select id="sortSelect" class="search-input" style="flex: 0 0 180px;" onchange="loadLinks()">
-            <option value="newest">Newest First</option>
-            <option value="oldest">Oldest First</option>
-            <option value="clicks">Most Clicks</option>
-          </select>
-          <button class="btn-secondary" onclick="loadLinks()">🔄 Refresh</button>
+      <!-- NOT LOGGED IN WALL -->
+      <div id="dashboardAuthWall" class="glass-card" style="text-align: center; padding: 60px 40px;">
+        <span style="font-size: 48px;">🔒</span>
+        <h2 style="font-family: var(--font-heading); margin-top: 16px;">Authentication Required</h2>
+        <p style="color: var(--text-muted); max-width: 500px; margin: 10px auto 24px;">
+          Log in to manage links, configure 301/302 redirects, generate personal API keys, and monitor real-time cache analytics.
+        </p>
+        <button class="btn-primary" onclick="openAuthModal()" style="max-width: 250px; margin: 0 auto;">Sign In / Sign Up</button>
+      </div>
+
+      <!-- AUTHENTICATED DASHBOARD CONTENT -->
+      <div id="dashboardMain" style="display: none;">
+        
+        <!-- PRODUCT PLAN STATUS BAR -->
+        <div class="glass-card plan-status-bar" style="padding: 16px 24px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-color: rgba(99, 102, 241, 0.3);">
+          <div>
+            <span style="font-weight: 700; color: #fff;">Plan Tier: <span id="lblPlanTier" class="tier-labelfree">Free Tier</span></span>
+            <span style="color: var(--text-muted); font-size: 13px; margin-left: 15px;" id="lblPlanUsage">Usage: 0 / 15 Links</span>
+          </div>
+          <div class="progress-bar-container" style="flex: 1; max-width: 300px; background: rgba(255,255,255,0.05); height: 8px; border-radius: 4px; overflow: hidden; margin: 0 15px;">
+            <div id="progressBarFill" style="background: var(--primary-glow); width: 0%; height: 100%; transition: width 0.3s ease;"></div>
+          </div>
+          <button class="btn-upgrade" id="barUpgradeBtn" onclick="openUpgradeModal()">⭐ Upgrade to Pro (Unlimited)</button>
         </div>
 
-        <table class="link-table">
-          <thead>
-            <tr>
-              <th>Short Link & Title</th>
-              <th>Destination URL</th>
-              <th>Clicks</th>
-              <th>Tags / Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="linksTableBody">
-            <!-- Dynamic Rows -->
-          </tbody>
-        </table>
+        <!-- DASHBOARD OVERVIEW CARDS (Product Performance Stats) -->
+        <div class="overview-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 25px;">
+          <div class="glass-card overview-card">
+            <h4>Total Clicks</h4>
+            <div class="value" id="cardTotalClicks">0</div>
+            <span class="desc">Across all active links</span>
+          </div>
+          <div class="glass-card overview-card">
+            <h4>Active Links</h4>
+            <div class="value" id="cardActiveLinks">0</div>
+            <span class="desc" id="cardActiveDesc">0/15 limit</span>
+          </div>
+          <div class="glass-card overview-card">
+            <h4>Cache Hit Efficiency</h4>
+            <div class="value" id="cardCacheRate">0%</div>
+            <span class="desc" id="cardCacheRatio">Hits: 0 | Misses: 0</span>
+          </div>
+          <div class="glass-card overview-card">
+            <h4>API Status</h4>
+            <div class="value" style="color: var(--accent-emerald);">Active</div>
+            <span class="desc">API Rate Limiting: Enabled</span>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+            <h2 style="font-family: var(--font-heading);">Manage Shortened Links</h2>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn-secondary btn-bulk-delete" id="bulkDeleteBtn" onclick="handleBulkDelete()" style="display: none;">🗑️ Delete Selected</button>
+              <button class="btn-secondary" onclick="loadLinks()">🔄 Refresh Links</button>
+            </div>
+          </div>
+
+          <div class="dashboard-controls">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search by URL, alias, title, or tag..." oninput="loadLinks()">
+            <select id="sortSelect" class="search-input" style="flex: 0 0 180px;" onchange="loadLinks()">
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="clicks">Most Clicks</option>
+            </select>
+          </div>
+
+          <div class="table-container" style="overflow-x: auto;">
+            <table class="link-table">
+              <thead>
+                <tr>
+                  <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this.checked)"></th>
+                  <th>Short Link & Title</th>
+                  <th>Destination URL</th>
+                  <th>Clicks</th>
+                  <th>Redirect Type</th>
+                  <th>Tags & Info</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="linksTableBody">
+                <!-- Dynamic Rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- API ACCESS TOKEN MANAGER CARD -->
+        <div class="glass-card">
+          <h3 style="font-family: var(--font-heading); margin-bottom: 12px; color: #a5b4fc; display: flex; align-items: center; gap: 8px;">🔑 API Access Token Manager</h3>
+          <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">
+            Use your personal API Access Token to programmatically create or manage short links from your terminal or custom apps.
+          </p>
+
+          <div class="api-token-container" style="background: rgba(15, 23, 42, 0.6); padding: 20px; border-radius: 12px; border: 1px solid var(--border-glass);">
+            <div id="noTokenBox">
+              <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 15px;">No active API Access Token generated yet.</p>
+              <button class="btn-primary" style="max-width: 250px;" onclick="generateApiKey()">Generate API Token</button>
+            </div>
+            
+            <div id="tokenActiveBox" style="display: none;">
+              <label style="font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Your API Access Key</label>
+              <div class="short-url-box" style="margin-top: 8px;">
+                <code id="apiKeyLabel" style="color: #cbd5e1; font-size: 15px; font-weight: 700;">ls_xyz...</code>
+                <div>
+                  <button class="copy-btn" onclick="copyApiKey()" style="background: #6366f1;">Copy</button>
+                  <button class="copy-btn" onclick="revokeApiKey()" style="background: #f43f5e; margin-left: 5px;">Revoke</button>
+                </div>
+              </div>
+              <h4 style="font-size: 13px; color: #67e8f9; margin-top: 20px; margin-bottom: 8px;">REST cURL Example Usage</h4>
+              <pre style="background: #090d16; color: #34d399; padding: 12px; border-radius: 8px; font-size: 12px; overflow-x: auto;">
+curl -X POST http://localhost:3000/api/shorten \
+  -H "X-API-Key: <span id="curlTokenPlaceholder">your_token_here</span>" \
+  -H "Content-Type: application/json" \
+  -d '{"target_url": "https://google.com", "redirect_type": 301}'</pre>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
-    <!-- TAB 3: API DOCS TAB -->
-    <div id="apiTab" class="tab-content" style="display: none;">
-      <div class="glass-card">
-        <h2 style="font-family: var(--font-heading); margin-bottom: 12px; color: #67e8f9;">🔌 LinkSnip REST API Documentation</h2>
-        <p style="color: var(--text-muted); margin-bottom: 24px;">Integrate LinkSnip shortening & analytics directly into your application.</p>
+  </div>
 
-        <div style="background: #0f172a; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-glass);">
-          <span style="background: #10b981; color: white; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 12px;">POST</span>
-          <code style="color: #f8fafc; font-size: 15px; margin-left: 10px;">/api/shorten</code>
-          <p style="color: var(--text-muted); font-size: 14px; margin-top: 8px;">Create a short URL with optional custom alias, password, and expiration.</p>
-          <pre style="background: #090d16; color: #34d399; padding: 12px; border-radius: 8px; margin-top: 10px; font-size: 13px;">
-{
-  "target_url": "https://example.com/promo",
-  "custom_alias": "spring-sale",
-  "expire_at": "2026-12-31T23:59:59Z",
-  "max_clicks": 500,
-  "password": "secretpasscode"
-}</pre>
-        </div>
+  <!-- AUTHENTICATION MODAL -->
+  <div id="authModal" class="modal">
+    <div class="modal-content" style="max-width: 420px; padding: 40px;">
+      <button class="close-modal" onclick="closeAuthModal()">&times;</button>
+      
+      <!-- AUTH TABS -->
+      <div class="auth-tabs" id="authTabsHeader">
+        <button class="auth-tab-btn active" onclick="switchAuthTab('login')">Sign In</button>
+        <button class="auth-tab-btn" onclick="switchAuthTab('register')">Register</button>
+      </div>
 
-        <div style="background: #0f172a; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-glass);">
-          <span style="background: #6366f1; color: white; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 12px;">GET</span>
-          <code style="color: #f8fafc; font-size: 15px; margin-left: 10px;">/api/analytics/:id</code>
-          <p style="color: var(--text-muted); font-size: 14px; margin-top: 8px;">Fetch per-link click counts, referrers, locations, and time breakdown.</p>
+      <!-- LOGIN FORM -->
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="loginEmail">Email Address</label>
+          <div class="input-wrapper">
+            <input type="email" id="loginEmail" placeholder="you@example.com" required>
+          </div>
         </div>
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <div class="input-wrapper">
+            <input type="password" id="loginPassword" placeholder="••••••••" required>
+          </div>
+        </div>
+        <button type="submit" class="btn-primary" style="margin-top: 10px;">Sign In</button>
+        <p style="text-align: center; margin-top: 16px; font-size: 13px;">
+          <a href="#" style="color: #67e8f9; text-decoration: none;" onclick="toggleForgotPassword(true)">Forgot Password?</a>
+        </p>
+      </form>
 
-        <div style="background: #0f172a; padding: 20px; border-radius: 12px; border: 1px solid var(--border-glass);">
-          <span style="background: #06b6d4; color: black; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 12px;">POST</span>
-          <code style="color: #f8fafc; font-size: 15px; margin-left: 10px;">/api/ai/suggest-alias</code>
-          <p style="color: var(--text-muted); font-size: 14px; margin-top: 8px;">Returns AI-generated smart custom alias recommendations.</p>
+      <!-- REGISTRATION FORM -->
+      <form id="registerForm" onsubmit="handleRegister(event)" style="display: none;">
+        <div class="form-group">
+          <label for="registerEmail">Email Address</label>
+          <div class="input-wrapper">
+            <input type="email" id="registerEmail" placeholder="you@example.com" required>
+          </div>
         </div>
+        <div class="form-group">
+          <label for="registerPassword">Password</label>
+          <div class="input-wrapper">
+            <input type="password" id="registerPassword" placeholder="••••••••" required>
+          </div>
+        </div>
+        <button type="submit" class="btn-primary" style="margin-top: 10px;">Create Account</button>
+      </form>
+
+      <!-- FORGOT PASSWORD FORM -->
+      <div id="forgotPasswordForm" style="display: none;">
+        <h3 style="font-family: var(--font-heading); margin-bottom: 12px; text-align: center;">Reset Password</h3>
+        <p style="font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 20px;">
+          Enter your email and we'll send a password reset code.
+        </p>
+        <div class="form-group">
+          <label for="forgotEmail">Email Address</label>
+          <div class="input-wrapper">
+            <input type="email" id="forgotEmail" placeholder="you@example.com">
+          </div>
+        </div>
+        <button class="btn-primary" onclick="handleForgotPassword()">Send Reset Code</button>
+        <p style="text-align: center; margin-top: 16px; font-size: 13px;">
+          <a href="#" style="color: var(--text-muted); text-decoration: none;" onclick="toggleForgotPassword(false)">Back to Sign In</a>
+        </p>
+      </div>
+
+      <!-- RESET PASSWORD VERIFY FORM -->
+      <div id="resetVerifyForm" style="display: none;">
+        <h3 style="font-family: var(--font-heading); margin-bottom: 12px; text-align: center;">Enter Reset Code</h3>
+        <div class="form-group">
+          <label for="resetToken">Reset Code (Check Console)</label>
+          <div class="input-wrapper">
+            <input type="text" id="resetToken" placeholder="8-char code" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="resetNewPassword">New Password</label>
+          <div class="input-wrapper">
+            <input type="password" id="resetNewPassword" placeholder="••••••••" required>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="handleResetPassword()">Change Password</button>
       </div>
     </div>
+  </div>
 
+  <!-- EDIT LINK MODAL -->
+  <div id="editLinkModal" class="modal">
+    <div class="modal-content" style="max-width: 480px;">
+      <button class="close-modal" onclick="closeEditModal()">&times;</button>
+      <h2 style="font-family: var(--font-heading); margin-bottom: 20px;">✏️ Edit Link Settings</h2>
+      
+      <form id="editLinkForm" onsubmit="handleSaveEdit(event)">
+        <input type="hidden" id="editLinkId">
+        <div class="form-group">
+          <label for="editTitle">Link Title</label>
+          <div class="input-wrapper">
+            <input type="text" id="editTitle" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="editTargetUrl">Destination URL</label>
+          <div class="input-wrapper">
+            <input type="url" id="editTargetUrl" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="editRedirectType">Redirection Type</label>
+          <div class="input-wrapper">
+            <select id="editRedirectType">
+              <option value="302">302 Temporary Redirect</option>
+              <option value="301">301 Permanent Redirect</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="editExpireAt">Expiration Date</label>
+          <div class="input-wrapper">
+            <input type="datetime-local" id="editExpireAt">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="editMaxClicks">Max Click Limit</label>
+          <div class="input-wrapper">
+            <input type="number" id="editMaxClicks" min="1">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="editTags">Tags (comma-separated)</label>
+          <div class="input-wrapper">
+            <input type="text" id="editTags">
+          </div>
+        </div>
+        <button type="submit" class="btn-primary" style="margin-top: 15px;">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- PRO TIERS UPGRADE CHECKOUT MODAL -->
+  <div id="upgradeModal" class="modal">
+    <div class="modal-content" style="max-width: 440px; padding: 35px;">
+      <button class="close-modal" onclick="closeUpgradeModal()">&times;</button>
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 40px;">⭐</span>
+        <h2 style="font-family: var(--font-heading); margin-top: 10px; background: var(--primary-glow); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Upgrade to LinkSnip Pro</h2>
+        <p style="color: var(--text-muted); font-size: 13px; margin-top: 8px;">Unlock unlimited links, customized QR codes, and API connections.</p>
+      </div>
+
+      <div class="payment-summary" style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 10px; margin-bottom: 20px; border: 1px solid var(--border-glass);">
+        <div style="display: flex; justify-content: space-between; font-weight: 700;">
+          <span>Pro Tier Subscription</span>
+          <span style="color: #67e8f9;">$9.99 / mo</span>
+        </div>
+        <span style="font-size: 11px; color: var(--text-muted);">Renews automatically. Cancel anytime.</span>
+      </div>
+
+      <!-- Payment Checkout Form Simulation -->
+      <form onsubmit="handleUpgradePayment(event)">
+        <div class="form-group">
+          <label>Cardholder Name</label>
+          <div class="input-wrapper">
+            <input type="text" placeholder="John Doe" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Credit Card Number</label>
+          <div class="input-wrapper">
+            <input type="text" placeholder="4111 2222 3333 4444" required>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Expiry Date</label>
+            <div class="input-wrapper">
+              <input type="text" placeholder="MM/YY" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>CVV / CVC</label>
+            <div class="input-wrapper">
+              <input type="text" placeholder="123" required>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary" style="margin-top: 20px;">💳 Pay & Upgrade Now</button>
+      </form>
+    </div>
   </div>
 
   <!-- ANALYTICS MODAL -->
@@ -212,12 +529,12 @@
     <div class="modal-content">
       <button class="close-modal" onclick="closeAnalyticsModal()">&times;</button>
 
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
         <div>
           <h2 id="modalLinkTitle" style="font-family: var(--font-heading);">Link Analytics</h2>
           <a id="modalShortUrl" href="#" target="_blank" style="color: #67e8f9; font-weight: 700;">https://linksnip.to/xyz</a>
         </div>
-        <a id="modalExportCsv" href="#" class="btn-secondary" style="text-decoration: none;">📥 Download CSV Report</a>
+        <a id="modalExportCsv" href="#" class="btn-secondary" style="text-decoration: none;" download>📥 Download CSV Report</a>
       </div>
 
       <!-- AI Insights Box -->
